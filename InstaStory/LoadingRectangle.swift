@@ -17,7 +17,7 @@ import SwiftUI
 
 struct LoadingRectangle: View {
     
-    var progress:CGFloat
+    var progress: CGFloat
     
     var body: some View {
         GeometryReader { geometry in
@@ -25,6 +25,7 @@ struct LoadingRectangle: View {
                 Rectangle()
                     .foregroundColor(Color.white.opacity(0.3))
                     .cornerRadius(5)
+                
                 Rectangle()
                     .frame(width: geometry.size.width * self.progress, height: nil, alignment: .leading)
                     .foregroundColor(Color.white.opacity(0.9))
