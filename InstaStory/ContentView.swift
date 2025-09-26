@@ -20,6 +20,24 @@ struct ContentView: View {
     @State private var isDragging: Bool = false
     @State private var dragOffset: CGSize = .zero
 
+    private var longPressGesture: some Gesture {
+        LongPressGesture(minimumDuration: 0.2)
+            .onChanged { _ in }
+            .simultaneously(with:
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in
+                        if storyTimer.state == .playing {
+                            storyTimer.pause()
+                        }
+                    }
+                    .onEnded { _ in
+                        if storyTimer.state == .pausedByHold {
+                            storyTimer.resume()
+                        }
+                    }
+            )
+    }
+
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
@@ -30,10 +48,10 @@ struct ContentView: View {
                     .clipped()
 
                 HStack(alignment: .center, spacing: 4) {
-                    ForEach(imageNames.indices) { x in
+                    ForEach(0..<imageNames.count, id: \.self) { x in
                         LoadingRectangle(progress: min( max( (CGFloat(storyTimer.progress) - CGFloat(x)), 0.0) , 1.0))
                             .frame(width: nil, height: 4, alignment: .leading)
-                            .animation(.linear)
+                            .animation(.linear(duration: 0.1), value: storyTimer.progress)
                             .onTapGesture {
                                 storyTimer.jumpToStory(x)
                             }
@@ -46,38 +64,14 @@ struct ContentView: View {
                         .onTapGesture {
                             storyTimer.advance(by: -1)
                         }
-                        .onLongPressGesture(minimumDuration: 0.2) {
-                            // Long press handled by main gesture
-                        } onPressingChanged: { isPressing in
-                            if isPressing {
-                                if storyTimer.state == .playing {
-                                    storyTimer.pause()
-                                }
-                            } else {
-                                if storyTimer.state == .pausedByHold {
-                                    storyTimer.resume()
-                                }
-                            }
-                        }
+                        .gesture(longPressGesture)
                     Rectangle()
                         .foregroundColor(.clear)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             storyTimer.advance(by: 1)
                         }
-                        .onLongPressGesture(minimumDuration: 0.2) {
-                            // Long press handled by main gesture
-                        } onPressingChanged: { isPressing in
-                            if isPressing {
-                                if storyTimer.state == .playing {
-                                    storyTimer.pause()
-                                }
-                            } else {
-                                if storyTimer.state == .pausedByHold {
-                                    storyTimer.resume()
-                                }
-                            }
-                        }
+                        .gesture(longPressGesture)
                 }
             }
             .offset(dragOffset)
@@ -111,8 +105,7 @@ struct ContentView: View {
                                 storyTimer.enterDismissing()
                                 withAnimation(.easeOut(duration: 0.3)) {
                                     dragOffset = CGSize(width: 0, height: value.translation.height > 0 ? geometry.size.height : -geometry.size.height)
-                                }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                } completion: {
                                     dragOffset = .zero
                                     isDragging = false
                                     storyTimer.cancel()
