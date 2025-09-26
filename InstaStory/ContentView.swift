@@ -31,7 +31,7 @@ struct ContentView: View {
                     ForEach(0..<imageNames.count, id: \.self) { x in
                         LoadingRectangle(progress: min( max( (CGFloat(storyTimer.progress) - CGFloat(x)), 0.0) , 1.0))
                             .frame(width: nil, height: 4, alignment: .leading)
-                            .animation(.linear(duration: 0.1), value: storyTimer.progress)
+                            .animation(.none, value: storyTimer.progress)
                             .onTapGesture {
                                 storyTimer.jumpToStory(x)
                             }
@@ -41,34 +41,34 @@ struct ContentView: View {
                     Rectangle()
                         .foregroundColor(.clear)
                         .contentShape(Rectangle())
-                        .simultaneousGesture(
-                            TapGesture().onEnded {
-                                storyTimer.advance(by: -1)
-                            }
-                        )
+                        .frame(maxWidth: geometry.size.width * 0.33)
+                        .onTapGesture {
+                            guard storyTimer.state != .pausedByHold else { return }
+                            storyTimer.advance(by: -1)
+                        }
                     Rectangle()
                         .foregroundColor(.clear)
                         .contentShape(Rectangle())
-                        .simultaneousGesture(
-                            TapGesture().onEnded {
-                                storyTimer.advance(by: 1)
-                            }
-                        )
+                        .frame(maxWidth: geometry.size.width * 0.67)
+                        .onTapGesture {
+                            guard storyTimer.state != .pausedByHold else { return }
+                            storyTimer.advance(by: 1)
+                        }
                 }
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { _ in
+                            if storyTimer.state == .playing {
+                                storyTimer.pause()
+                            }
+                        }
+                        .onEnded { _ in
+                            if storyTimer.state == .pausedByHold {
+                                storyTimer.resume()
+                            }
+                        }
+                )
             }
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        if storyTimer.state == .playing {
-                            storyTimer.pause()
-                        }
-                    }
-                    .onEnded { _ in
-                        if storyTimer.state == .pausedByHold {
-                            storyTimer.resume()
-                        }
-                    }
-            )
         }
         .onAppear { storyTimer.start() }
         .onDisappear { storyTimer.cancel() }
