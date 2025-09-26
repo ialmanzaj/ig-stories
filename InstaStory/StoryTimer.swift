@@ -38,7 +38,6 @@ class StoryTimer: ObservableObject {
     private var startTime: Date?
     private var pausedTime: TimeInterval = 0
     private var isPaused: Bool = false
-    private var advanceQueue: Int = 0
     
     init(items: Int, duration: TimeInterval = 15.0) {
         self.totalStories = items
@@ -71,17 +70,6 @@ class StoryTimer: ObservableObject {
     private func updateProgress() {
         guard let startTime = self.startTime, !self.isPaused else { return }
 
-        // Process queued advances
-        if self.advanceQueue > 0 {
-            let advances = self.advanceQueue
-            self.advanceQueue = 0
-            DispatchQueue.main.async {
-                for _ in 0..<advances {
-                    self.nextStory()
-                }
-            }
-            return
-        }
 
         let elapsed = Date().timeIntervalSince(startTime)
         let totalTime = elapsed + self.pausedTime
@@ -177,8 +165,10 @@ class StoryTimer: ObservableObject {
     
     func advance(by number: Int) {
         if number > 0 {
-            // Queue forward advances for rapid tapping
-            self.advanceQueue += number
+            // Execute forward advances immediately
+            for _ in 0..<number {
+                self.nextStory()
+            }
         } else if number < 0 {
             // Moving backward - execute immediately
             for _ in 0..<(-number) {
