@@ -40,13 +40,13 @@ xcodebuild -project InstaStory.xcodeproj -scheme InstaStory -destination 'generi
 ### Testing
 ```bash
 # Run all tests (unit + UI)
-xcodebuild test -project InstaStory.xcodeproj -scheme InstaStory -destination 'platform=iOS Simulator,name=iPhone 15'
+xcodebuild test -project InstaStory.xcodeproj -scheme InstaStory -destination 'platform=iOS Simulator,name=iPhone 16'
 
 # Run only UI tests
-xcodebuild test -project InstaStory.xcodeproj -scheme InstaStory -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:InstaStoryTestsUI
+xcodebuild test -project InstaStory.xcodeproj -scheme InstaStory -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:InstaStoryTestsUI
 
 # Run only unit tests
-xcodebuild test -project InstaStory.xcodeproj -scheme InstaStory -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:InstaStoryTests
+xcodebuild test -project InstaStory.xcodeproj -scheme InstaStory -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:InstaStoryTests
 ```
 
 ## Project Structure
