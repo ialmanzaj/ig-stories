@@ -5,13 +5,6 @@
 //  Created by Isaac on 09/25/25.
 //
 
-//
-//  LoadingRectangle.swift
-//  InstagramStoryTutorial
-//
-//  Created by Jean-Marc Boullianne on 4/14/20.
-//  Copyright © 2020 TrailingClosure. All rights reserved.
-//
 
 import SwiftUI
 

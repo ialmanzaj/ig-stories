@@ -18,57 +18,71 @@ struct ContentView: View {
     @ObservedObject var storyTimer: StoryTimer = StoryTimer(items: 4, duration: 15.0)
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .top) {
-                Image(imageNames[safe: Int(storyTimer.progress)] ?? imageNames.last!)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
-                    .clipped()
+        ZStack(alignment: .top) {
+            Image(imageNames[safe: Int(storyTimer.progress)] ?? imageNames.last!)
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .ignoresSafeArea()
 
-                HStack(alignment: .center, spacing: 4) {
-                    ForEach(0..<imageNames.count, id: \.self) { x in
-                        LoadingRectangle(progress: min( max( (CGFloat(storyTimer.progress) - CGFloat(x)), 0.0) , 1.0))
-                            .frame(width: nil, height: 4, alignment: .leading)
-                            .animation(.linear(duration: 0.1), value: storyTimer.progress)
-                            .onTapGesture {
-                                storyTimer.jumpToStory(x)
+            GeometryReader { geometry in
+                let safeArea = geometry.safeAreaInsets
+                let overlayWidth = geometry.size.width + safeArea.leading + safeArea.trailing
+                let overlayHeight = geometry.size.height + safeArea.top + safeArea.bottom
+
+                ZStack(alignment: .top) {
+                        HStack(alignment: .center, spacing: 4) {
+                            ForEach(0..<imageNames.count, id: \.self) { index in
+                                LoadingRectangle(progress: min(max(CGFloat(storyTimer.progress) - CGFloat(index), 0.0), 1.0))
+                                    .frame(width: nil, height: 4, alignment: .leading)
+                                    .animation(.linear(duration: 0.1), value: storyTimer.progress)
+                                    .onTapGesture {
+                                        storyTimer.jumpToStory(index)
+                                    }
                             }
+                        
+                       
+                    }.padding()
+                    
+
+                    HStack(alignment: .center, spacing: 0) {
+                        Rectangle()
+                            .foregroundColor(.clear)
+                            .contentShape(Rectangle())
+                            .simultaneousGesture(
+                                TapGesture().onEnded {
+                                    storyTimer.advance(by: -1)
+                                }
+                            )
+
+                        Rectangle()
+                            .foregroundColor(.clear)
+                            .contentShape(Rectangle())
+                            .simultaneousGesture(
+                                TapGesture().onEnded {
+                                    storyTimer.advance(by: 1)
+                                }
+                            )
                     }
-                }.padding()
-                HStack(alignment: .center, spacing: 0) {
-                    Rectangle()
-                        .foregroundColor(.clear)
-                        .contentShape(Rectangle())
-                        .simultaneousGesture(
-                            TapGesture().onEnded {
-                                storyTimer.advance(by: -1)
-                            }
-                        )
-                    Rectangle()
-                        .foregroundColor(.clear)
-                        .contentShape(Rectangle())
-                        .simultaneousGesture(
-                            TapGesture().onEnded {
-                                storyTimer.advance(by: 1)
-                            }
-                        )
+                    .frame(width: overlayWidth, height: overlayHeight)
+                    .offset(x: -safeArea.leading, y: -safeArea.top)
+                    .ignoresSafeArea()
                 }
             }
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        if storyTimer.state == .playing {
-                            storyTimer.pause()
-                        }
-                    }
-                    .onEnded { _ in
-                        if storyTimer.state == .pausedByHold {
-                            storyTimer.resume()
-                        }
-                    }
-            )
         }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    if storyTimer.state == .playing {
+                        storyTimer.pause()
+                    }
+                }
+                .onEnded { _ in
+                    if storyTimer.state == .pausedByHold {
+                        storyTimer.resume()
+                    }
+                }
+        )
         .onAppear { storyTimer.start() }
         .onDisappear { storyTimer.cancel() }
     }
