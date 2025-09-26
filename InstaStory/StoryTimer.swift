@@ -139,8 +139,9 @@ class StoryTimer: ObservableObject {
     
     func nextStory() {
         if currentStoryIndex >= totalStories - 1 {
-            // At last story - should exit instead of looping
-            enterDismissing()
+            // At last story - restart from beginning for demo purposes
+            self.currentStoryIndex = 0
+            startStoryTimer()
         } else {
             self.currentStoryIndex += 1
             startStoryTimer()

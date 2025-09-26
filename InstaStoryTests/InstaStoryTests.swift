@@ -26,10 +26,10 @@ struct InstaStoryTests {
         timer.nextStory()
         #expect(timer.currentStoryIndex == 3)
 
-        // At last story, should enter dismissing state
+        // At last story, should loop back to first story and keep playing
         timer.nextStory()
-        #expect(timer.state == .dismissing)
-        #expect(timer.currentStoryIndex == 3)
+        #expect(timer.currentStoryIndex == 0)
+        #expect(timer.state != .dismissing)
     }
 
     @Test @MainActor func storyTimerPreviousStoryNavigation() {
@@ -100,6 +100,17 @@ struct InstaStoryTests {
         // Test multiple backward advance
         timer.advance(by: -2)
         #expect(timer.currentStoryIndex == 0)
+    }
+
+    @Test @MainActor func storyTimerForwardAdvanceLoopsFromEnd() {
+        let timer = StoryTimer(items: 3, duration: 5.0)
+
+        timer.jumpToStory(2)
+        #expect(timer.currentStoryIndex == 2)
+
+        timer.advance(by: 1)
+        #expect(timer.currentStoryIndex == 0)
+        #expect(timer.state != .dismissing)
     }
 
     // MARK: - Acceptance Tests
@@ -186,9 +197,10 @@ struct InstaStoryTests {
         timer.jumpToStory(2)
         #expect(timer.currentStoryIndex == 2)
 
-        // Advancing past last story should trigger dismissing
+        // Advancing past last story should loop back instead of dismissing
         timer.nextStory()
-        #expect(timer.state == .dismissing, "Should enter dismissing state after last story")
+        #expect(timer.currentStoryIndex == 0, "Loop should reset to first story")
+        #expect(timer.state != .dismissing, "Looping should avoid dismissing state")
     }
 
 }
