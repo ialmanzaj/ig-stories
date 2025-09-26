@@ -23,8 +23,9 @@ struct ContentView: View {
                 Image(imageNames[safe: Int(storyTimer.progress)] ?? imageNames.last!)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+                    .frame(width: geometry.size.width, height: nil, alignment: .center)
                     .clipped()
+                    .ignoresSafeArea()
 
                 HStack(alignment: .center, spacing: 4) {
                     ForEach(0..<imageNames.count, id: \.self) { x in
@@ -69,6 +70,19 @@ struct ContentView: View {
                     }
             )
         }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    if storyTimer.state == .playing {
+                        storyTimer.pause()
+                    }
+                }
+                .onEnded { _ in
+                    if storyTimer.state == .pausedByHold {
+                        storyTimer.resume()
+                    }
+                }
+        )
         .onAppear { storyTimer.start() }
         .onDisappear { storyTimer.cancel() }
     }
