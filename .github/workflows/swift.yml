@@ -1,90 +1,22 @@
-# GitHub Action for InstaStory iOS Tests
 name: iOS CI
 
-# When to trigger the jobs
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
 
-# Set default permissions
-permissions:
-  contents: read
-
-# Global environment variables
-env:
-  DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
-  XCODE_PROJECT: InstaStory.xcodeproj
-  XCODE_SCHEME: InstaStory
-  IOS_DESTINATION: 'platform=iOS Simulator,name=iPhone 15,OS=17.2'
-
-# List of jobs to perform
 jobs:
   test:
-    name: Build and Test
-    runs-on: macos-14 # Use specific version instead of 'latest'
-    timeout-minutes: 30 # Prevent runaway jobs
+    runs-on: macos-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0 # Full history for better caching
+    - uses: actions/checkout@v4
 
-    - name: Cache Xcode derived data
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/Library/Developer/Xcode/DerivedData
-          ~/.cache/org.swift.swiftpm/
-        key: ${{ runner.os }}-xcode-${{ hashFiles('**/*.pbxproj', '**/*.swift') }}
-        restore-keys: |
-          ${{ runner.os }}-xcode-
-
-    - name: List available Xcode versions
-      run: ls /Applications/ | grep Xcode
-
-    - name: Select Xcode version
-      run: |
-        sudo xcode-select -switch $DEVELOPER_DIR
-        xcodebuild -version
-
-    - name: Build project
-      run: |
-        xcodebuild clean build \
-          -project $XCODE_PROJECT \
-          -scheme $XCODE_SCHEME \
-          -destination "$IOS_DESTINATION" \
-          -configuration Debug \
-          CODE_SIGNING_ALLOWED=NO \
-          | xcpretty
-
-    - name: Run unit tests
+    - name: Build and Test
       run: |
         xcodebuild test \
-          -project $XCODE_PROJECT \
-          -scheme $XCODE_SCHEME \
-          -destination "$IOS_DESTINATION" \
-          -only-testing:InstaStoryTests \
-          CODE_SIGNING_ALLOWED=NO \
-          | xcpretty
-
-    - name: Run UI tests
-      run: |
-        xcodebuild test \
-          -project $XCODE_PROJECT \
-          -scheme $XCODE_SCHEME \
-          -destination "$IOS_DESTINATION" \
-          -only-testing:InstaStoryTestsUI \
-          CODE_SIGNING_ALLOWED=NO \
-          | xcpretty
-
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results
-        path: |
-          ~/Library/Developer/Xcode/DerivedData/**/Logs/Test/*.xcresult
-        retention-days: 7
+          -project InstaStory.xcodeproj \
+          -scheme InstaStory \
+          -destination 'platform=iOS Simulator,name=iPhone 15' \
+          CODE_SIGNING_ALLOWED=NO
