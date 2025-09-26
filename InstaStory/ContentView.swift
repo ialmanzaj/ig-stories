@@ -70,19 +70,6 @@ struct ContentView: View {
                     }
             )
         }
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in
-                    if storyTimer.state == .playing {
-                        storyTimer.pause()
-                    }
-                }
-                .onEnded { _ in
-                    if storyTimer.state == .pausedByHold {
-                        storyTimer.resume()
-                    }
-                }
-        )
         .onAppear { storyTimer.start() }
         .onDisappear { storyTimer.cancel() }
     }
