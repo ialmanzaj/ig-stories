@@ -26,22 +26,27 @@ struct ContentView: View {
                     .frame(width: geometry.size.width, height: nil, alignment: .center)
                     .clipped()
                     .ignoresSafeArea()
+                    .accessibilityIdentifier("StoryImage")
 
                 HStack(alignment: .center, spacing: 4) {
                     ForEach(0..<imageNames.count, id: \.self) { x in
                         LoadingRectangle(progress: min( max( (CGFloat(storyTimer.progress) - CGFloat(x)), 0.0) , 1.0))
                             .frame(width: nil, height: 4, alignment: .leading)
                             .animation(.none, value: storyTimer.progress)
+                            .accessibilityIdentifier("ProgressBar\(x)")
                             .onTapGesture {
                                 storyTimer.jumpToStory(x)
                             }
                     }
                 }.padding()
+                .accessibilityIdentifier("ProgressBarContainer")
+
                 HStack(alignment: .center, spacing: 0) {
                     Rectangle()
                         .foregroundColor(.clear)
                         .contentShape(Rectangle())
                         .frame(maxWidth: geometry.size.width * 0.33)
+                        .accessibilityIdentifier("LeftNavigationZone")
                         .onTapGesture {
                             guard storyTimer.state != .pausedByHold else { return }
                             storyTimer.advance(by: -1)
@@ -50,11 +55,13 @@ struct ContentView: View {
                         .foregroundColor(.clear)
                         .contentShape(Rectangle())
                         .frame(maxWidth: geometry.size.width * 0.67)
+                        .accessibilityIdentifier("RightNavigationZone")
                         .onTapGesture {
                             guard storyTimer.state != .pausedByHold else { return }
                             storyTimer.advance(by: 1)
                         }
                 }
+                .accessibilityIdentifier("NavigationZones")
                 .simultaneousGesture(
                     DragGesture(minimumDistance: 0)
                         .onChanged { _ in
@@ -69,6 +76,7 @@ struct ContentView: View {
                         }
                 )
             }
+            .accessibilityIdentifier("StoryView")
         }
         .onAppear { storyTimer.start() }
         .onDisappear { storyTimer.cancel() }

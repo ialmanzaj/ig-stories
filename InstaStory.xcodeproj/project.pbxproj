@@ -14,11 +14,19 @@
 			remoteGlobalIDString = 6AB611932E8608690026FBBE;
 			remoteInfo = InstaStory;
 		};
+		6AB611F82E87240D0026FBBE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6AB6118C2E8608690026FBBE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6AB611932E8608690026FBBE;
+			remoteInfo = InstaStory;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		6AB611942E8608690026FBBE /* InstaStory.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InstaStory.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6AB611DD2E86DD3B0026FBBE /* InstaStoryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InstaStoryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6AB611F22E87240D0026FBBE /* InstaStoryTestsUI.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InstaStoryTestsUI.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -30,6 +38,11 @@
 		6AB611DE2E86DD3B0026FBBE /* InstaStoryTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = InstaStoryTests;
+			sourceTree = "<group>";
+		};
+		6AB611F32E87240D0026FBBE /* InstaStoryTestsUI */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = InstaStoryTestsUI;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -49,6 +62,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		6AB611EF2E87240D0026FBBE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -57,6 +77,7 @@
 			children = (
 				6AB611962E8608690026FBBE /* InstaStory */,
 				6AB611DE2E86DD3B0026FBBE /* InstaStoryTests */,
+				6AB611F32E87240D0026FBBE /* InstaStoryTestsUI */,
 				6AB611952E8608690026FBBE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -66,6 +87,7 @@
 			children = (
 				6AB611942E8608690026FBBE /* InstaStory.app */,
 				6AB611DD2E86DD3B0026FBBE /* InstaStoryTests.xctest */,
+				6AB611F22E87240D0026FBBE /* InstaStoryTestsUI.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -118,6 +140,29 @@
 			productReference = 6AB611DD2E86DD3B0026FBBE /* InstaStoryTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		6AB611F12E87240D0026FBBE /* InstaStoryTestsUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6AB611FA2E87240D0026FBBE /* Build configuration list for PBXNativeTarget "InstaStoryTestsUI" */;
+			buildPhases = (
+				6AB611EE2E87240D0026FBBE /* Sources */,
+				6AB611EF2E87240D0026FBBE /* Frameworks */,
+				6AB611F02E87240D0026FBBE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6AB611F92E87240D0026FBBE /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				6AB611F32E87240D0026FBBE /* InstaStoryTestsUI */,
+			);
+			name = InstaStoryTestsUI;
+			packageProductDependencies = (
+			);
+			productName = InstaStoryTestsUI;
+			productReference = 6AB611F22E87240D0026FBBE /* InstaStoryTestsUI.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -132,6 +177,10 @@
 						CreatedOnToolsVersion = 26.0.1;
 					};
 					6AB611DC2E86DD3B0026FBBE = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = 6AB611932E8608690026FBBE;
+					};
+					6AB611F12E87240D0026FBBE = {
 						CreatedOnToolsVersion = 26.0.1;
 						TestTargetID = 6AB611932E8608690026FBBE;
 					};
@@ -153,6 +202,7 @@
 			targets = (
 				6AB611932E8608690026FBBE /* InstaStory */,
 				6AB611DC2E86DD3B0026FBBE /* InstaStoryTests */,
+				6AB611F12E87240D0026FBBE /* InstaStoryTestsUI */,
 			);
 		};
 /* End PBXProject section */
@@ -166,6 +216,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6AB611DB2E86DD3B0026FBBE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6AB611F02E87240D0026FBBE /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -189,6 +246,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		6AB611EE2E87240D0026FBBE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -196,6 +260,11 @@
 			isa = PBXTargetDependency;
 			target = 6AB611932E8608690026FBBE /* InstaStory */;
 			targetProxy = 6AB611E12E86DD3B0026FBBE /* PBXContainerItemProxy */;
+		};
+		6AB611F92E87240D0026FBBE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6AB611932E8608690026FBBE /* InstaStory */;
+			targetProxy = 6AB611F82E87240D0026FBBE /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -421,6 +490,44 @@
 			};
 			name = Release;
 		};
+		6AB611FB2E87240D0026FBBE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.playground.InstaStoryTestsUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = InstaStory;
+			};
+			name = Debug;
+		};
+		6AB611FC2E87240D0026FBBE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.playground.InstaStoryTestsUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = InstaStory;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -447,6 +554,15 @@
 			buildConfigurations = (
 				6AB611E42E86DD3B0026FBBE /* Debug */,
 				6AB611E52E86DD3B0026FBBE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6AB611FA2E87240D0026FBBE /* Build configuration list for PBXNativeTarget "InstaStoryTestsUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6AB611FB2E87240D0026FBBE /* Debug */,
+				6AB611FC2E87240D0026FBBE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
