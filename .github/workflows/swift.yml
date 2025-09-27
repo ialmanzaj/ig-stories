@@ -10,8 +10,8 @@ env:
   SCHEME: "InstaStory"
   PROJECT: "InstaStory.xcodeproj"
   IOS_VERSION: "18.6"
-  SIMULATOR_NAME: "iPhone SE (3rd generation)"
-  DESTINATION: 'platform=iOS Simulator,name=Any iOS Simulator Device'
+  SIMULATOR_NAME: "iPhone 16"
+  DESTINATION: 'platform=iOS Simulator,name=iPhone 16,OS=18.6'
 
 jobs:
   build:
