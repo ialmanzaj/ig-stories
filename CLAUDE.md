@@ -328,5 +328,64 @@ let rightZonePoint = storyView.coordinate(withNormalizedOffset: CGVector(dx: 0.6
 - ✅ **Complete gesture coverage** validating all CLAUDE.md implementation learnings
 - ✅ **Instagram-spec compliance** with pixel-perfect 33%/67% navigation zones
 
+## UI Test Setup - Critical Element Detection Fix
+
+### Problem: Test Setup Failures with Image Element Detection
+When setting up UI tests, the initial app launch verification failed consistently with element-based detection approaches.
+
+### Root Cause Analysis
+**Image Element Detection Issues:**
+```swift
+// Failed approach - SwiftUI Image not reliably detected
+let storyImage = app.images.firstMatch
+XCTAssertTrue(storyImage.waitForExistence(timeout: 5)) // ❌ Always failed
+
+// Failed approach - Accessibility identifier not working
+let storyImage = app.images["StoryImage"].firstMatch
+XCTAssertTrue(storyImage.waitForExistence(timeout: 5)) // ❌ Still failed
+```
+
+**Why it failed:**
+- SwiftUI `Image` views aren't consistently exposed as accessible image elements in UI tests
+- Even with `accessibilityIdentifier("StoryImage")` applied to the Image view
+- Dynamic content (images that change) may not register immediately in accessibility tree
+- Image elements have timing issues during app launch phase
+
+### Solution: Container-Based Element Detection
+
+**Successful Implementation:**
+```swift
+// ✅ WORKS - Target stable container element
+let storyView = app.otherElements["StoryView"].firstMatch
+XCTAssertTrue(storyView.waitForExistence(timeout: 10), "Story should load within 10 seconds")
+```
+
+**Why this works:**
+- `GeometryReader` with `accessibilityIdentifier("StoryView")` is reliably detected
+- Container elements are more stable than content elements
+- Longer timeout (10s) accommodates simulator startup delays
+- Tests the overall app structure rather than specific content
+
+### Key Testing Setup Rules
+1. **Target container elements** for app launch verification, not content elements
+2. **Use longer timeouts** (10+ seconds) for initial app launch tests in CI environments
+3. **Avoid dynamic content detection** in setup phase - test static structure instead
+4. **Prefer stable accessibility identifiers** on parent containers over child content
+
+### Updated Test Setup Pattern
+```swift
+override func setUpWithError() throws {
+    continueAfterFailure = false
+    app = XCUIApplication()
+    app.launch()
+
+    // ✅ Test stable container existence instead of dynamic content
+    let storyView = app.otherElements["StoryView"].firstMatch
+    XCTAssertTrue(storyView.waitForExistence(timeout: 10), "Story should load within 10 seconds")
+}
+```
+
+This pattern ensures reliable test setup that works across different simulator configurations and CI environments.
+
 ## Production-Ready Result
 Complete Instagram Stories clone with pixel-perfect gesture behavior, reliable pause/resume, smooth progress continuation, proper state management, and comprehensive UI test coverage. All gestures work exactly like the real Instagram app with validated test coverage.
