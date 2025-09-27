@@ -44,31 +44,19 @@ jobs:
           -destination '${{ env.DESTINATION }}' \
           CODE_SIGNING_ALLOWED=NO
 
-    - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-products
-        path: ~/Library/Developer/Xcode/DerivedData/**/Build/Products
-        retention-days: 1
 
   unit-tests:
     name: Unit Tests
     runs-on: macos-15
-    needs: build
 
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Download Build Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: build-products
-        path: ~/Library/Developer/Xcode/DerivedData/InstaStory/Build/Products
 
     - name: Run Unit Tests
       run: |
-        xcodebuild test-without-building \
+        xcodebuild test \
           -project ${{ env.PROJECT }} \
           -scheme ${{ env.SCHEME }} \
           -destination '${{ env.DESTINATION }}' \
@@ -78,17 +66,11 @@ jobs:
   ui-tests:
     name: UI Tests
     runs-on: macos-15
-    needs: build
 
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Download Build Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: build-products
-        path: ~/Library/Developer/Xcode/DerivedData/InstaStory/Build/Products
 
     - name: List iOS Simulators
       run: |
@@ -97,7 +79,7 @@ jobs:
 
     - name: Run UI Tests
       run: |
-        xcodebuild test-without-building \
+        xcodebuild test \
           -project ${{ env.PROJECT }} \
           -scheme ${{ env.SCHEME }} \
           -destination '${{ env.DESTINATION }}' \
