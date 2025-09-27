@@ -9,14 +9,14 @@ on:
 env:
   SCHEME: "InstaStory"
   PROJECT: "InstaStory.xcodeproj"
-  IOS_VERSION: "17.5"
+  IOS_VERSION: "18.0"
   SIMULATOR_NAME: "iPhone SE (3rd generation)"
-  DESTINATION: 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=17.5'
+  DESTINATION: 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.0'
 
 jobs:
   build:
     name: Build for Testing
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
     - name: Checkout
@@ -37,7 +37,7 @@ jobs:
         xcrun simctl list devices
 
         # Create iPhone SE simulator if it doesn't exist
-        xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" "iOS17.5" || true
+        xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" "iOS18.0" || true
 
         # List devices again to verify
         xcrun simctl list devices
@@ -59,7 +59,7 @@ jobs:
 
   unit-tests:
     name: Unit Tests
-    runs-on: macos-13
+    runs-on: macos-15
     needs: build
 
     steps:
@@ -83,7 +83,7 @@ jobs:
 
   ui-tests:
     name: UI Tests
-    runs-on: macos-13
+    runs-on: macos-15
     needs: build
 
     steps:
@@ -102,7 +102,7 @@ jobs:
         xcrun simctl list devices
 
         # Create iPhone SE simulator if it doesn't exist
-        xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" "iOS17.5" || true
+        xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" "iOS18.0" || true
 
         # Boot the simulator
         xcrun simctl boot "iPhone SE (3rd generation)" || true
