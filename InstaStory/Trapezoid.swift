@@ -6,106 +6,256 @@
 //
 
 import SwiftUI
+import Combine
 
-// Rectángulo simple (topInset = 0)
+// MARK: - Shape Component
+
+/**
+ * Trapezoid Shape - Custom SwiftUI Shape for Building Block Animation
+ *
+ * Purpose: Creates rectangular building blocks for the falling animation effect.
+ * Currently configured as a simple rectangle (topInset = 0), but designed to be
+ * extensible for future trapezoid variations if needed.
+ *
+ * Design Decision: Using a custom Shape instead of built-in Rectangle allows for
+ * future flexibility to create actual trapezoid shapes or add visual effects
+ * specific to the animation blocks.
+ */
 struct Trapezoid: Shape {
     var topInset: CGFloat
+
+    /// Creates a rectangular path that forms the building block shape
+    /// - Parameter r: The rectangle bounds in which to draw the shape
+    /// - Returns: A Path defining the block's outline
     func path(in r: CGRect) -> Path {
         var p = Path()
-        p.move(to: CGPoint(x: 0, y: r.maxY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
-        p.addLine(to: CGPoint(x: 0, y: r.minY))
-        p.closeSubpath()
+        // Draw a rectangle by connecting the four corners
+        // Starting from bottom-left, going clockwise
+        p.move(to: CGPoint(x: 0, y: r.maxY))           // Bottom-left
+        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))   // Bottom-right
+        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))   // Top-right
+        p.addLine(to: CGPoint(x: 0, y: r.minY))        // Top-left
+        p.closeSubpath()                               // Close the shape
         return p
     }
 }
 
-/// Fase 1 LIFO: el **último en caer queda arriba del stack** (primero en el stack).
-/// Slots fijos invisibles + un único bloque volador posicionado por coordenadas absolutas.
-/// Sin rebotes. Sin solapes.
-struct Phase1NoOverlapLIFOView: View {
-    private let levels = 3
-    private let blockHeight: CGFloat = 72
-    private let landingGap: CGFloat = 120
-    private let fallDuration: Double = 1.0
-    private let settlePause: Double = 0.05
-    private var fallAnim: Animation { .linear(duration: fallDuration) } // sin rebote
+// MARK: - Configuration Component
 
-    // Colores base→arriba
-    private let colorsBottomToTop: [Color] = [
-        Color(red: 0.357, green: 0.227, blue: 0.122), // base
-        Color(red: 0.714, green: 0.514, blue: 0.365), // medio
-        Color(red: 0.545, green: 0.588, blue: 0.624)  // tope
+/**
+ * FallingBlockConfig - Configuration for falling block animation
+ *
+ * Purpose: Centralizes all animation parameters, timing, and visual settings
+ * in a clean, data-focused structure. This separation allows easy tweaking
+ * of animation behavior without touching the view logic.
+ */
+struct FallingBlockConfig {
+    /// Number of building blocks in the stack
+    let levels: Int = 3
+
+    /// Height of each individual building block in points
+    let blockHeight: CGFloat = 72
+
+    /// Distance from bottom of screen to the bottom of the stack
+    let landingGap: CGFloat = 120
+
+    /// Duration for each block to fall from top to its landing position
+    let fallDuration: Double = 1.0
+
+    /// Brief pause between blocks to create rhythmic timing
+    let settlePause: Double = 0.05
+
+    /// Color palette for blocks, ordered from bottom to top of final stack
+    /// Uses earthy tones that create visual hierarchy and depth
+    let colorsBottomToTop: [Color] = [
+        Color(red: 0.357, green: 0.227, blue: 0.122), // Dark brown base - foundation
+        Color(red: 0.714, green: 0.514, blue: 0.365), // Tan middle - transition
+        Color(red: 0.545, green: 0.588, blue: 0.624)  // Blue-gray top - accent
     ]
 
-    @State private var slotVisible = Array(repeating: false, count: 3)
+    /// Dark background color for contrast with falling blocks
+    let backgroundColor: Color = Color(red: 0.09, green: 0.06, blue: 0.15)
 
-    // Bloque volador (posición absoluta)
-    @State private var flyVisible: Bool = false
-    @State private var flyColor: Color = .clear
-    @State private var flyCenterY: CGFloat = -2000
+    /// Linear animation without easing for consistent falling speed
+    var fallAnimation: Animation {
+        .linear(duration: fallDuration)
+    }
+}
+
+// MARK: - State Management Component
+
+/**
+ * FallingBlockState - Observable state management for falling block animation
+ *
+ * Purpose: Manages all animation state in a centralized, observable way.
+ * Separates state management from view logic, making the animation
+ * easier to test and reason about.
+ */
+final class FallingBlockState: ObservableObject {
+    private let config = FallingBlockConfig()
+
+    /// Visibility state for each fixed slot position (false = invisible, true = visible)
+    @Published var slotVisible = Array(repeating: false, count: 3)
+
+    /// Whether flying block is visible during animation
+    @Published var flyVisible: Bool = false
+
+    /// Current color of the flying block
+    @Published var flyColor: Color = .clear
+
+    /// Y position of flying block center
+    @Published var flyCenterY: CGFloat = -2000
+
+    /// Starts the complete falling animation sequence
+    /// - Parameter slotPositions: Y coordinates for each slot position
+    @MainActor
+    func startAnimation(slotPositions: [CGFloat]) async {
+        // Reset all slots to invisible
+        slotVisible = Array(repeating: false, count: config.levels)
+
+        // Sequential falling animation implementing LIFO stacking
+        for i in 0..<config.levels {
+            await dropBlock(to: i, at: slotPositions[i])
+        }
+    }
+
+    /// Animates a single block drop to a specific slot
+    /// - Parameters:
+    ///   - targetSlot: Index of the target slot (0 = bottom, 2 = top)
+    ///   - position: Y coordinate for the target position
+    @MainActor
+    private func dropBlock(to targetSlot: Int, at position: CGFloat) async {
+        // Setup flying block for this drop
+        flyColor = config.colorsBottomToTop[targetSlot]
+        flyCenterY = -config.blockHeight  // Start above screen
+        flyVisible = true
+
+        // Animate the fall using linear motion
+        withAnimation(config.fallAnimation) {
+            flyCenterY = position  // Drop to target position
+        }
+
+        // Wait for fall animation to complete
+        try? await Task.sleep(nanoseconds: UInt64(config.fallDuration * 1_000_000_000))
+
+        // Instant transition: hide flying block, show fixed slot
+        var transaction = Transaction()
+        transaction.disablesAnimations = true  // Disable animations for instant transition
+        withTransaction(transaction) {
+            slotVisible[targetSlot] = true  // Show block in final position
+            flyVisible = false              // Hide flying block
+        }
+
+        // Brief pause before next block for rhythm
+        try? await Task.sleep(nanoseconds: UInt64(config.settlePause * 1_000_000_000))
+    }
+}
+
+// MARK: - Main Animation View Component
+
+/**
+ * Phase1NoOverlapLIFOView - Main falling block animation view
+ *
+ * ANIMATION CONCEPT:
+ * Creates a satisfying falling block animation where blocks drop from above and stack
+ * using LIFO (Last In, First Out) ordering - the last block to fall lands on top.
+ *
+ * VISUAL DESIGN:
+ * - 3 building blocks fall sequentially from off-screen
+ * - Each block has a distinct earthy color (brown base, tan middle, blue-gray top)
+ * - Blocks stack vertically with precise positioning
+ * - Clean, linear animation without bouncing or overlapping
+ *
+ * TECHNICAL APPROACH:
+ * - Uses fixed invisible "slots" that define final positions
+ * - Single flying block animates between positions using absolute coordinates
+ * - Implements opacity-based state transitions for smooth visual handoff
+ * - No collision detection needed due to sequential timing
+ */
+struct Phase1NoOverlapLIFOView: View {
+    private let config = FallingBlockConfig()
+    @StateObject private var animationState = FallingBlockState()
+    @State private var animationTask: Task<Void, Never>?
 
     var body: some View {
-        GeometryReader { g in
-            let w = g.size.width
-            let h = g.size.height
+        GeometryReader { geometry in
+            let screenWidth = geometry.size.width
+            let screenHeight = geometry.size.height
 
-            // Centros Y de los slots por índice de base (0=base, 1=medio, 2=tope)
-            let slotCentersY: [CGFloat] = (0..<levels).map { idxBottom in
-                let stackBottomY = h - landingGap
-                return stackBottomY - (CGFloat(idxBottom) + 0.5) * blockHeight
+            // MARK: - Position Calculator Component
+
+            /// Calculate the center Y coordinates for each slot position
+            /// Index 0 = bottom of stack, Index 2 = top of stack
+            /// This creates the precise landing positions for each falling block
+            let slotPositions: [CGFloat] = (0..<config.levels).map { slotIndex in
+                let stackBottomY = screenHeight - config.landingGap
+                // Each block is positioned above the previous one by blockHeight
+                return stackBottomY - (CGFloat(slotIndex) + 0.5) * config.blockHeight
             }
 
             ZStack {
-                // Slots fijos (reservan espacio desde el inicio)
-                ForEach(0..<levels, id: \.self) { idxBottom in
+                // MARK: - Fixed Slot Renderer Component
+
+                /// Fixed slots that define the final resting positions
+                /// These are invisible until a block "lands" and becomes visible
+                /// Purpose: Eliminates overlapping and ensures consistent positioning
+                ForEach(0..<config.levels, id: \.self) { slotIndex in
                     Trapezoid(topInset: 0)
-                        .fill(colorsBottomToTop[idxBottom])
-                        .frame(width: w, height: blockHeight)
-                        .position(x: w / 2, y: slotCentersY[idxBottom])
-                        .opacity(slotVisible[idxBottom] ? 1 : 0)
+                        .fill(config.colorsBottomToTop[slotIndex])
+                        .frame(width: screenWidth, height: config.blockHeight)
+                        .position(x: screenWidth / 2, y: slotPositions[slotIndex])
+                        .opacity(animationState.slotVisible[slotIndex] ? 1 : 0)
                 }
 
-                // Bloque volador
+                // MARK: - Flying Block Renderer Component
+
+                /// Single animated block that moves between positions
+                /// This creates the falling animation effect by transitioning from
+                /// off-screen to each slot position sequentially
                 Trapezoid(topInset: 0)
-                    .fill(flyColor)
-                    .frame(width: w, height: blockHeight)
-                    .position(x: w / 2, y: flyCenterY)
-                    .opacity(flyVisible ? 1 : 0)
+                    .fill(animationState.flyColor)
+                    .frame(width: screenWidth, height: config.blockHeight)
+                    .position(x: screenWidth / 2, y: animationState.flyCenterY)
+                    .opacity(animationState.flyVisible ? 1 : 0)
             }
-            .background(Color(red: 0.09, green: 0.06, blue: 0.15))
+            .background(config.backgroundColor)
             .ignoresSafeArea()
             .onAppear {
-                Task { @MainActor in
-                    // LIFO: i=0 cae a BASE (idxBottom=0), i=1 a MEDIO (1), i=2 a TOPE (2).
-                    for i in 0..<levels {
-                        let targetIdxBottom = i            // ← cambio clave: último en caer va arriba
-                        flyColor = colorsBottomToTop[targetIdxBottom]
-                        flyCenterY = -blockHeight          // parte fuera de pantalla
-                        flyVisible = true
+                // MARK: - Animation Trigger Component
 
-                        withAnimation(fallAnim) {
-                            flyCenterY = slotCentersY[targetIdxBottom]
-                        }
-                        try? await Task.sleep(nanoseconds: UInt64(fallDuration * 1_000_000_000))
-
-                        var t = Transaction(); t.disablesAnimations = true
-                        withTransaction(t) {
-                            slotVisible[targetIdxBottom] = true
-                            flyVisible = false
-                        }
-                        try? await Task.sleep(nanoseconds: UInt64(settlePause * 1_000_000_000))
-                    }
+                animationTask = Task {
+                    /// Trigger the animation sequence using the state manager
+                    await animationState.startAnimation(slotPositions: slotPositions)
                 }
+            }
+            .onDisappear {
+                animationTask?.cancel()
             }
         }
     }
 }
 
-// Demo
+// MARK: - Demo Implementation
+
+/**
+ * ContentView - Demo wrapper for the falling block animation
+ *
+ * Purpose: Provides a simple entry point to showcase the Phase1NoOverlapLIFOView
+ * animation in SwiftUI previews and when used as a standalone view.
+ *
+ * The ignoresSafeArea() modifier ensures the animation fills the entire screen
+ * for maximum visual impact, particularly important for the dark background
+ * and falling block positioning calculations.
+ */
 struct ContentView: View {
-    var body: some View { Phase1NoOverlapLIFOView().ignoresSafeArea() }
+    var body: some View {
+        Phase1NoOverlapLIFOView()
+            .ignoresSafeArea()  // Full screen for immersive animation experience
+    }
 }
 
-#Preview { ContentView() }
+// MARK: - SwiftUI Preview
+
+#Preview {
+    ContentView()
+}
