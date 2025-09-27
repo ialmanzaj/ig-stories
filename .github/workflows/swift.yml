@@ -9,11 +9,11 @@ on:
 env:
   SCHEME: "InstaStory"
   PROJECT: "InstaStory.xcodeproj"
-  DESTINATION: 'platform=iOS Simulator,name=iPhone 15'
+  DESTINATION: 'platform=iOS Simulator,name=iPhone SE (3rd generation)'
 
 jobs:
-  unit-tests:
-    name: Unit Tests
+  build:
+    name: Build for Testing
     runs-on: macos-latest
 
     steps:
@@ -24,14 +24,44 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/Library/Developer/Xcode/DerivedData
-        key: ${{ runner.os }}-xcode-unit-${{ hashFiles('**/*.swift', '**/*.pbxproj') }}
+        key: ${{ runner.os }}-xcode-build-${{ hashFiles('**/*.swift', '**/*.pbxproj') }}
         restore-keys: |
-          ${{ runner.os }}-xcode-unit-
+          ${{ runner.os }}-xcode-build-
           ${{ runner.os }}-xcode-
+
+    - name: Build for Testing
+      run: |
+        xcodebuild build-for-testing \
+          -project ${{ env.PROJECT }} \
+          -scheme ${{ env.SCHEME }} \
+          -destination '${{ env.DESTINATION }}' \
+          CODE_SIGNING_ALLOWED=NO
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-products
+        path: ~/Library/Developer/Xcode/DerivedData/**/Build/Products
+        retention-days: 1
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: macos-latest
+    needs: build
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-products
+        path: ~/Library/Developer/Xcode/DerivedData/InstaStory/Build/Products
 
     - name: Run Unit Tests
       run: |
-        xcodebuild test \
+        xcodebuild test-without-building \
           -project ${{ env.PROJECT }} \
           -scheme ${{ env.SCHEME }} \
           -destination '${{ env.DESTINATION }}' \
@@ -41,28 +71,25 @@ jobs:
   ui-tests:
     name: UI Tests
     runs-on: macos-latest
+    needs: build
 
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Cache Xcode derived data
-      uses: actions/cache@v4
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v4
       with:
-        path: ~/Library/Developer/Xcode/DerivedData
-        key: ${{ runner.os }}-xcode-ui-${{ hashFiles('**/*.swift', '**/*.pbxproj') }}
-        restore-keys: |
-          ${{ runner.os }}-xcode-ui-
-          ${{ runner.os }}-xcode-
+        name: build-products
+        path: ~/Library/Developer/Xcode/DerivedData/InstaStory/Build/Products
 
     - name: Pre-boot Simulator
       run: |
-        xcrun simctl boot "iPhone 15" || true
-        xcrun simctl list devices
+        xcrun simctl boot "iPhone SE (3rd generation)" || true
 
     - name: Run UI Tests
       run: |
-        xcodebuild test \
+        xcodebuild test-without-building \
           -project ${{ env.PROJECT }} \
           -scheme ${{ env.SCHEME }} \
           -destination '${{ env.DESTINATION }}' \
