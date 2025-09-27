@@ -30,7 +30,10 @@ struct ContentView: View {
 
                 HStack(alignment: .center, spacing: 4) {
                     ForEach(0..<imageNames.count, id: \.self) { x in
-                        LoadingRectangle(progress: min( max( (CGFloat(storyTimer.progress) - CGFloat(x)), 0.0) , 1.0))
+                        LoadingRectangle(
+                            progress: min( max( (CGFloat(storyTimer.progress) - CGFloat(x)), 0.0) , 1.0),
+                            storyIndex: x
+                        )
                             .frame(width: nil, height: 4, alignment: .leading)
                             .animation(.none, value: storyTimer.progress)
                             .accessibilityIdentifier("ProgressBar\(x)")

@@ -11,6 +11,7 @@ import SwiftUI
 struct LoadingRectangle: View {
 
     var progress: CGFloat
+    var storyIndex: Int?
 
     var body: some View {
         GeometryReader { geometry in
@@ -27,11 +28,14 @@ struct LoadingRectangle: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityAddTraits(.isButton)
+        .accessibilityLabel(storyIndex != nil ? "Story \(storyIndex! + 1)" : "Story progress")
+        .accessibilityValue("\(Int(progress * 100)) percent complete")
+        .accessibilityHint("Tap to jump to this story")
     }
 }
 
 struct LoadingRectangle_Previews: PreviewProvider {
     static var previews: some View {
-        LoadingRectangle(progress: 0.7)
+        LoadingRectangle(progress: 0.7, storyIndex: 0)
     }
 }
