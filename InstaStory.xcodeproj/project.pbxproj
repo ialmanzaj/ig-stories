@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXContainerItemProxy section */
@@ -30,21 +30,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		6AB611962E8608690026FBBE /* InstaStory */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = InstaStory;
-			sourceTree = "<group>";
-		};
-		6AB611DE2E86DD3B0026FBBE /* InstaStoryTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = InstaStoryTests;
-			sourceTree = "<group>";
-		};
-		6AB611F32E87240D0026FBBE /* InstaStoryTestsUI */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = InstaStoryTestsUI;
-			sourceTree = "<group>";
-		};
+		6AB611962E8608690026FBBE /* InstaStory */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = InstaStory; sourceTree = "<group>"; };
+		6AB611DE2E86DD3B0026FBBE /* InstaStoryTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = InstaStoryTests; sourceTree = "<group>"; };
+		6AB611F32E87240D0026FBBE /* InstaStoryTestsUI */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = InstaStoryTestsUI; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -187,6 +175,7 @@
 				};
 			};
 			buildConfigurationList = 6AB6118F2E8608690026FBBE /* Build configuration list for PBXProject "InstaStory" */;
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -195,7 +184,6 @@
 			);
 			mainGroup = 6AB6118B2E8608690026FBBE;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 56;
 			productRefGroup = 6AB611952E8608690026FBBE /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -395,6 +383,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WWJCJL8K6H;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -426,6 +415,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WWJCJL8K6H;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
