@@ -1,0 +1,87 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  SCHEME: "InstaStory"
+  PROJECT: "InstaStory.xcodeproj"
+  IOS_VERSION: "18.6"
+  SIMULATOR_NAME: "iPhone 16"
+  DESTINATION: 'platform=iOS Simulator,name=iPhone 16,OS=18.6'
+
+jobs:
+  build:
+    name: Build for Testing
+    runs-on: macos-15
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Cache Xcode derived data
+      uses: actions/cache@v4
+      with:
+        path: ~/Library/Developer/Xcode/DerivedData
+        key: ${{ runner.os }}-xcode-build-${{ hashFiles('**/*.swift', '**/*.pbxproj') }}
+        restore-keys: |
+          ${{ runner.os }}-xcode-build-
+          ${{ runner.os }}-xcode-
+
+    - name: List iOS Simulators
+      run: |
+        # List available simulators for debugging
+        xcrun simctl list devices
+
+    - name: Build for Testing
+      run: |
+        xcodebuild build-for-testing \
+          -project ${{ env.PROJECT }} \
+          -scheme ${{ env.SCHEME }} \
+          -destination '${{ env.DESTINATION }}' \
+          CODE_SIGNING_ALLOWED=NO
+
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: macos-15
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+
+    - name: Run Unit Tests
+      run: |
+        xcodebuild test \
+          -project ${{ env.PROJECT }} \
+          -scheme ${{ env.SCHEME }} \
+          -destination '${{ env.DESTINATION }}' \
+          -only-testing:InstaStoryTests \
+          CODE_SIGNING_ALLOWED=NO
+
+  ui-tests:
+    name: UI Tests
+    runs-on: macos-15
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+
+    - name: List iOS Simulators
+      run: |
+        # List available simulators for debugging
+        xcrun simctl list devices
+
+    - name: Run UI Tests
+      run: |
+        xcodebuild test \
+          -project ${{ env.PROJECT }} \
+          -scheme ${{ env.SCHEME }} \
+          -destination '${{ env.DESTINATION }}' \
+          -only-testing:InstaStoryTestsUI \
+          CODE_SIGNING_ALLOWED=NO
