@@ -9,7 +9,9 @@ on:
 env:
   SCHEME: "InstaStory"
   PROJECT: "InstaStory.xcodeproj"
-  DESTINATION: 'platform=iOS Simulator,name=iPhone SE (3rd generation)'
+  IOS_VERSION: "17.5"
+  SIMULATOR_NAME: "iPhone SE (3rd generation)"
+  DESTINATION: 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=17.5'
 
 jobs:
   build:
@@ -28,6 +30,17 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-xcode-build-
           ${{ runner.os }}-xcode-
+
+    - name: Setup iOS Simulator
+      run: |
+        # List available simulators
+        xcrun simctl list devices
+
+        # Create iPhone SE simulator if it doesn't exist
+        xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" "iOS17.5" || true
+
+        # List devices again to verify
+        xcrun simctl list devices
 
     - name: Build for Testing
       run: |
@@ -83,8 +96,15 @@ jobs:
         name: build-products
         path: ~/Library/Developer/Xcode/DerivedData/InstaStory/Build/Products
 
-    - name: Pre-boot Simulator
+    - name: Setup and Boot Simulator
       run: |
+        # List available simulators
+        xcrun simctl list devices
+
+        # Create iPhone SE simulator if it doesn't exist
+        xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" "iOS17.5" || true
+
+        # Boot the simulator
         xcrun simctl boot "iPhone SE (3rd generation)" || true
 
     - name: Run UI Tests
