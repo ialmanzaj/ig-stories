@@ -7,6 +7,30 @@
 
 import SwiftUI
 
+// MARK: - Progress Bar Component
+/// Isolated progress bar component to prevent unnecessary re-renders of the main story view
+/// Only this component re-renders every 10ms when storyTimer.progress updates
+private struct ProgressBarRow: View {
+  @ObservedObject var storyTimer: StoryTimer
+  let imageNames: [String]
+
+  var body: some View {
+    HStack(alignment: .center, spacing: 4) {
+      ForEach(0..<imageNames.count, id: \.self) { x in
+        LoadingRectangle(
+          progress: min(max(CGFloat(storyTimer.progress) - CGFloat(x), 0.0), 1.0),
+          storyIndex: x
+        )
+        .frame(height: 4, alignment: .leading)
+        .animation(.none, value: storyTimer.progress)
+        .accessibilityIdentifier("ProgressBar\(x)")
+        .onTapGesture { storyTimer.jumpToStory(x) }
+      }
+    }
+    .accessibilityIdentifier("ProgressBarContainer")
+  }
+}
+
 private struct HeaderBar: View {
   let title: String
   let onBack: () -> Void
@@ -43,6 +67,7 @@ struct StoriesScreen: View {
   /// ObservableObject pattern ensures UI updates when timer state changes
   @ObservedObject var storyTimer: StoryTimer = StoryTimer(items: 4, duration: 15.0)
 
+
   var body: some View {
     // MARK: - Navigation Structure
     /// Navigation stack containing a demo link to stock prices view
@@ -52,6 +77,15 @@ struct StoriesScreen: View {
       /// GeometryReader provides screen dimensions for precise layout calculations
       /// Critical for implementing Instagram's 33%/67% tap zone specification
       GeometryReader { geometry in
+        // MARK: - Local Geometry Calculations
+        /// Compute layout values locally to eliminate render loops
+        let geometrywidth = geometry.size.width
+        let usableWidth = geometrywidth - geometry.safeAreaInsets.leading - geometry.safeAreaInsets.trailing
+        let leftZoneWidth = usableWidth * 0.33
+        let rightZoneWidth = usableWidth * 0.67
+        let headerTop = geometry.safeAreaInsets.top + 8
+        let zonesTop = headerTop + 64  // headerHeight constant
+
         ZStack(alignment: .top) {
           // MARK: - Main Story Image
           /// Displays the current story image based on timer progress
@@ -60,34 +94,18 @@ struct StoriesScreen: View {
           Image(imageNames[safe: Int(storyTimer.progress)] ?? imageNames.last!)
             .resizable()
             .aspectRatio(contentMode: .fill)
-            .frame(width: geometry.size.width, height: nil, alignment: .center)
+            .frame(width: geometrywidth, height: nil, alignment: .center)
             .clipped()  // Crop overflow content
             .ignoresSafeArea()  // Full-screen immersive experience
             .accessibilityIdentifier("StoryImage")  // For UI testing
-        
-        let headerTop = geometry.safeAreaInsets.top + 8
-        let headerHeight: CGFloat = 64   // ~back pill + title + progress
-        let zonesTop = headerTop + headerHeight
             
          
           VStack(spacing: 12) {
-              // MARK: - Custom Header (back + title)
-              HeaderBar(title: "Stock Prices", onBack: { dismiss() })
+            // MARK: - Custom Header (back + title)
+            HeaderBar(title: "Stock Prices", onBack: { dismiss() })
         
             // MARK: - Progress Bar Section
-            HStack(alignment: .center, spacing: 4) {
-              ForEach(0..<imageNames.count, id: \.self) { x in
-                LoadingRectangle(
-                  progress: min(max(CGFloat(storyTimer.progress) - CGFloat(x), 0.0), 1.0),
-                  storyIndex: x
-                )
-                .frame(height: 4, alignment: .leading)
-                .animation(.none, value: storyTimer.progress)
-                .accessibilityIdentifier("ProgressBar\(x)")
-                .onTapGesture { storyTimer.jumpToStory(x) }
-              }
-            }
-            .accessibilityIdentifier("ProgressBarContainer")
+            ProgressBarRow(storyTimer: storyTimer, imageNames: imageNames)
           }
           .padding()
           .zIndex(2) // keep above everything
@@ -102,11 +120,7 @@ struct StoriesScreen: View {
             Rectangle()
               .foregroundColor(.clear)  // Invisible but tappable
               .contentShape(Rectangle())  // Ensure tap detection on clear rectangle
-              .frame(
-                maxWidth: /// Calculate 33% of usable screen width (excluding safe areas)
-                (geometry.size.width - geometry.safeAreaInsets.leading
-                  - geometry.safeAreaInsets.trailing) * 0.33
-              )
+              .frame(maxWidth: leftZoneWidth)
               .accessibilityIdentifier("LeftNavigationZone")  // For UI testing (coordinate-based)
               .onTapGesture {
                 /// State guard: prevent navigation during hold-to-pause
@@ -119,11 +133,7 @@ struct StoriesScreen: View {
             Rectangle()
               .foregroundColor(.clear)  // Invisible but tappable
               .contentShape(Rectangle())  // Ensure tap detection on clear rectangle
-              .frame(
-                maxWidth: /// Calculate 67% of usable screen width (excluding safe areas)
-                (geometry.size.width - geometry.safeAreaInsets.leading
-                  - geometry.safeAreaInsets.trailing) * 0.67
-              )
+              .frame(maxWidth: rightZoneWidth)
               .accessibilityIdentifier("RightNavigationZone")  // For UI testing (coordinate-based)
               .onTapGesture {
                 /// State guard: prevent navigation during hold-to-pause
@@ -160,7 +170,7 @@ struct StoriesScreen: View {
               }
           )
         }
-        .accessibilityIdentifier("StoryView")  // Main container for UI testing
+        .accessibilityIdentifier("StoryView")
       }
       // MARK: - Lifecycle Management
       .onAppear { storyTimer.start() }  // Start story progression when view appears
